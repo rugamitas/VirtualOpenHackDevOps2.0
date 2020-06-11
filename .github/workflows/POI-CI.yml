@@ -33,7 +33,7 @@ jobs:
         dotnet-version: 3.1
         
     - name: build
-      run: donet build apis/poi/poi.sln
+      run: dotnet build apis/poi/poi.sln
         
     - name: dotnet unit testing
       run: dotnet test apis/poi/tests/UnitTests//UnitTests.csproj   
