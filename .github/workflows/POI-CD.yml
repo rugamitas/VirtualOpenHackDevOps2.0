@@ -13,34 +13,105 @@
 # For more information on GitHub Actions for Azure, refer to https://github.com/Azure/Actions
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
 on:
-  release:
-    types: [created]
+  push:
+    branches: [master]
+    paths: 'apis/poi/**'
+    
 
-env:
-  AZURE_WEBAPP_NAME: your-app-name    # set this to your application's name
-  AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
-  NODE_VERSION: '10.x'                # set this to the node version to use
+#env:
+#  AZURE_WEBAPP_NAME: your-app-name    # set this to your application's name
+#  AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
+#  NODE_VERSION: '10.x'                # set this to the node version to use
 
-jobs:
-  build-and-deploy:
-    name: Build and Deploy
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ env.NODE_VERSION }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-    - name: npm install, build, and test
-      run: |
+#jobs:
+ # build-and-deploy:
+ #   name: Build and Deploy
+ #   runs-on: ubuntu-latest
+ #   steps:
+ #   - uses: actions/checkout@v2
+ #   - name: Use Node.js ${{ env.NODE_VERSION }}
+ #     uses: actions/setup-node@v1
+ #     with:
+ #       node-version: ${{ env.NODE_VERSION }}
+ #   - name: npm install, build, and test
+ #     run: |
         # Build and test the project, then
         # deploy to Azure Web App.
-        npm install
-        npm run build --if-present
-        npm run test --if-present
-    - name: 'Deploy to Azure WebApp'
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+ #       npm install
+ #       npm run build --if-present
+ #       npm run test --if-present
+ #   - name: 'Deploy to Azure WebApp'
+ #     uses: azure/webapps-deploy@v2
+ #     with:
+ #       app-name: ${{ env.AZURE_WEBAPP_NAME }}
+ #       publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+ #       package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+
+
+
+
+
+#name: Docker Image CI
+
+#on:
+#  push:
+#    branches: [ master ]
+#  pull_request:
+#    branches: [ master ]
+
+#jobs:
+
+ # build:
+
+ #   runs-on: ubuntu-latest
+
+ #   steps:
+ #   - uses: actions/checkout@v2
+ #   - name: Build the Docker image
+ #     run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+
+
+
+#.
+#- name: Microsoft Azure Container Registry Login
+#  uses: elgohr/acr-login-action@0.1
+#  with:
+    # The ACR service principal to use for login
+#    service_principal: 
+    # The password of the service principal
+#    service_principal_password: 
+    # The ACR tenant to use for login
+#    tenant: 
+    # The ACR registry to use
+#    registry: 
+#    # The ACR repository to use
+#    repository: 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      #Azure Login task
+      - name: Azure Login
+        uses: Azure/login@v1.1
+        with:
+          # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: list web apps
+        run: |
+          az webapp list --query "[?state=='Running']"
+
+
+#Azure CLI task 
+#- name: Azure CLI Action
+#  uses: Azure/cli@v1.0.0
+#  with:
+#    # Build API-POI Image from Dockerfile on ACR
+#    inlineScript: |
+#      az acr build --image "devopsoh/api-poi:${{ github.run_number }}" \
+#      --registry openhackt9f3u9t8acr \
+#      --file Dockerfile .
+#    # Azure CLI version to be used to execute the script. If not provided, latest version is used
+#    azcliversion: # optional, default is latest
