@@ -92,6 +92,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       #Azure Login task
       - name: Azure Login
         uses: Azure/login@v1.1
@@ -102,16 +103,14 @@ jobs:
       - name: list web apps
         run: |
           az webapp list --query "[?state=='Running']"
-
-
-#Azure CLI task 
-#- name: Azure CLI Action
-#  uses: Azure/cli@v1.0.0
-#  with:
-#    # Build API-POI Image from Dockerfile on ACR
-#    inlineScript: |
-#      az acr build --image "devopsoh/api-poi:${{ github.run_number }}" \
-#      --registry openhackt9f3u9t8acr \
-#      --file Dockerfile .
-#    # Azure CLI version to be used to execute the script. If not provided, latest version is used
-#    azcliversion: # optional, default is latest
+          
+      #Azure CLI task 
+      #- name: Azure CLI Action
+        #uses: Azure/cli@v1.0.0
+        #with:
+          # Build API-POI Image from Dockerfile on ACR
+            #inlineScript: |
+              #az acr build --image "${{ secrets.POI_CONTAINER_REPO }}:${{ github.run_number }}" \
+              #--registry ${{ secrets.AZURE_ACR }} \
+              #--file Dockerfile .
+               
