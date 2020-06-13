@@ -1,4 +1,5 @@
 testing
-test2
+test2 login to Azure
 Test3 with CD
-Test first deployment to ACR
+Test4 deployment to ACR
+Test4.1 second time - deployment to ACR  
