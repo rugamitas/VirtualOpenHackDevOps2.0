@@ -100,17 +100,27 @@ jobs:
           # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           
-      - name: list web apps
-        run: |
-          az webapp list --query "[?state=='Running']"
+      #- name: list web apps
+      #  run: |
+      #    az webapp list --query "[?state=='Running']"
           
       #Azure CLI task 
-      - name: Azure CLI Action
-        uses: Azure/cli@v1.0.0
+      #- name: Azure CLI Action
+      #  uses: Azure/cli@v1.0.0
+      #  with:
+      #     #Build API-POI Image from Dockerfile on ACR
+      #      azcliversion: latest
+      #      inlineScript: |
+      #        az acr build --image "${{ secrets.POI_CONTAINER_REPO }}:${{ github.run_number }}" \
+      #        --registry ${{ secrets.AZURE_ACR }} \
+      #        --file Dockerfile .
+      - name: ACR authentication
+        uses: azure/docker-login@v1
         with:
-           #Build API-POI Image from Dockerfile on ACR
-            inlineScript: |
-              az acr build --image "${{ secrets.POI_CONTAINER_REPO }}:${{ github.run_number }}" \
-              --registry ${{ secrets.AZURE_ACR }} \
-              --file Dockerfile .
-               
+          login-server: ${{ secrets.AZURE_ACR }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Docker Build & Push to ACR
+        run: |
+          docker build . -t ${{ secrets.AZURE_ACR }}/${{ secrets.POI_CONTAINER_REPO }}:${{ github.sha }}
+          docker push ${{ secrets.AZURE_ACR }}/${{ secrets.POI_CONTAINER_REPO }}:${{ github.sha }}         
