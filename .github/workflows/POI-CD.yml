@@ -108,7 +108,7 @@ jobs:
       - name: Azure CLI Action
         uses: Azure/cli@v1.0.0
         with:
-           Build API-POI Image from Dockerfile on ACR
+           #Build API-POI Image from Dockerfile on ACR
             inlineScript: |
               az acr build --image "${{ secrets.POI_CONTAINER_REPO }}:${{ github.run_number }}" \
               --registry ${{ secrets.AZURE_ACR }} \
