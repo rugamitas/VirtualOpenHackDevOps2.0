@@ -42,12 +42,10 @@ jobs:
           images: "${{ secrets.AZURE_ACR }}/${{ secrets.POI_CONTAINER_REPO }}:${{ github.run_number }}"
 
       
-      - name: Swap slot when healthy
-        if: ${{ secrets.POI_HEALTH_CHECK_STATUS }} == 'Healthy'
-        #Azure CLI task
+      #Azure CLI task to swap web app slot 
+      - name: Azure CLI Action
         uses: Azure/cli@v1.0.0
         with:
-          #Azure CLI script to swap web app slot
           azcliversion: latest
           inlineScript: |
             echo "##############################"
