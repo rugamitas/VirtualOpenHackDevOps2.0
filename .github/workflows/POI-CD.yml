@@ -41,4 +41,13 @@ jobs:
           # Applies to Web App Containers only: Specify the fully qualified container image(s) name. For example, 'myregistry.azurecr.io/nginx:latest' or 'python:3.7.2-alpine/'. For multi-container scenario multiple container image names can be provided (multi-line separated)
           images: "${{ secrets.AZURE_ACR }}/${{ secrets.POI_CONTAINER_REPO }}:${{ github.run_number }}"
           
-
+      - name: Swap slot when healthy
+        if: ${{ secrets.POI_HEALTH_CHECK_STATUS }} == 'Healthy'
+        #Azure CLI task
+        uses: Azure/cli@v1.0.0
+        with:
+          #Azure CLI script to swap web app slot
+          azcliversion: latest
+          inlineScript: |
+            az webapp deployment slot swap -n "openhackt9f3u9t8poi" -g "openhackt9f3u9t8rg" -s "staging" --target-slot "Production"
+            
