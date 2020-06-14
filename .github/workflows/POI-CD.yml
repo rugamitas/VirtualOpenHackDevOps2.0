@@ -40,7 +40,11 @@ jobs:
           slot-name: staging
           # Applies to Web App Containers only: Specify the fully qualified container image(s) name. For example, 'myregistry.azurecr.io/nginx:latest' or 'python:3.7.2-alpine/'. For multi-container scenario multiple container image names can be provided (multi-line separated)
           images: "${{ secrets.AZURE_ACR }}/${{ secrets.POI_CONTAINER_REPO }}:${{ github.run_number }}"
-          
+      
+      - name: set env
+        run: ::set-env name=POI_HEALTH_CHECK_STATUS::$(curl https://openhackjra3xid0poi-staging.azurewebsites.net/api/healthcheck/poi) 
+
+      
       - name: Swap slot when healthy
         if: ${{ secrets.POI_HEALTH_CHECK_STATUS }} == 'Healthy'
         #Azure CLI task
