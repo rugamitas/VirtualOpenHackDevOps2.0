@@ -7,3 +7,4 @@ Test5 add docker build and push task
 TEst6 go back to azure ACR task
 Test6.1 remove . at the end of the dockerfile
 Test7 add deploy to web app slot
+Test8 add web app health check and swap
