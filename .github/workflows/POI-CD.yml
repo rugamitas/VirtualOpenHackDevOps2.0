@@ -93,8 +93,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      #Azure Login task
-      - name: Azure Login
+      #Azure CLI login task
+      - name: 'Login via Azure CLI'
         uses: Azure/login@v1.1
         with:
           # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
@@ -105,22 +105,31 @@ jobs:
       #    az webapp list --query "[?state=='Running']"
           
       #Azure CLI task 
-      #- name: Azure CLI Action
-      #  uses: Azure/cli@v1.0.0
-      #  with:
-      #     #Build API-POI Image from Dockerfile on ACR
-      #      azcliversion: latest
-      #      inlineScript: |
-      #        az acr build --image "${{ secrets.POI_CONTAINER_REPO }}:${{ github.run_number }}" \
-      #        --registry ${{ secrets.AZURE_ACR }} \
-      #        --file Dockerfile .
-      - name: ACR authentication
-        uses: azure/docker-login@v1
+      - name: Azure CLI Action
+        uses: Azure/cli@v1.0.0
         with:
-          login-server: ${{ secrets.AZURE_ACR }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-      - name: Docker Build & Push to ACR
-        run: |
-          docker build . -t ${{ secrets.AZURE_ACR }}/${{ secrets.POI_CONTAINER_REPO }}:${{ github.sha }}
-          docker push ${{ secrets.AZURE_ACR }}/${{ secrets.POI_CONTAINER_REPO }}:${{ github.sha }}         
+           #Build API-POI Image from Dockerfile on ACR
+            azcliversion: latest
+            inlineScript: |
+              az acr build 'https://github.com/rugamitas/VirtualOpenHackDevOps2.0.git#master:apis/poi/web' --image "${{ secrets.POI_CONTAINER_REPO }}:${{ github.run_number }}" \
+              --registry ${{ secrets.AZURE_ACR }} \
+              --file Dockerfile .
+      #      - name: 'Build and push image'
+      # uses: azure/docker-login@v1
+      # with:
+      #   login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+      #   username: ${{ secrets.REGISTRY_USERNAME }}
+      #   password: ${{ secrets.REGISTRY_PASSWORD }}
+     #- run: |
+     #    docker build . -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ secrets.POI_CONTAINER_REPO }}:${{ github.sha }}
+     #    docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ secrets.POI_CONTAINER_REPO }}:${{ github.sha }}     
+     #
+     #- name: Build & Push Docker images to ACR
+     #  uses: docker/build-push-action@v1.1.0
+     #  with:
+          
+     #    username: ${{ secrets.REGISTRY_USERNAME }}
+     #    password: ${{ secrets.REGISTRY_PASSWORD }}
+     #    repository: '${{ secrets.POI_CONTAINER_REPO }}'
+     #    dockerfile: 'apis/poi/web/Dockerfile'
+      
