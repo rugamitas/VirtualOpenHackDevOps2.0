@@ -113,7 +113,7 @@ jobs:
             inlineScript: |
               az acr build 'https://github.com/rugamitas/VirtualOpenHackDevOps2.0.git#master:apis/poi/web' --image "${{ secrets.POI_CONTAINER_REPO }}:${{ github.run_number }}" \
               --registry ${{ secrets.AZURE_ACR }} \
-              --file Dockerfile .
+              --file Dockerfile
       #      - name: 'Build and push image'
       # uses: azure/docker-login@v1
       # with:
