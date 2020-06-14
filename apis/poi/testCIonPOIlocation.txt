@@ -10,3 +10,4 @@ Test7 add deploy to web app slot
 Test8 add web app health check and swap
 Test9 chhange the way to get the healthy status of the web app
 Test10 add the swap into a azure cli task
+Test10.1 forget to remove a line 
