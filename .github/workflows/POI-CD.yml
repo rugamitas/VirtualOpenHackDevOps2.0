@@ -40,9 +40,6 @@ jobs:
           slot-name: staging
           # Applies to Web App Containers only: Specify the fully qualified container image(s) name. For example, 'myregistry.azurecr.io/nginx:latest' or 'python:3.7.2-alpine/'. For multi-container scenario multiple container image names can be provided (multi-line separated)
           images: "${{ secrets.AZURE_ACR }}/${{ secrets.POI_CONTAINER_REPO }}:${{ github.run_number }}"
-      
-      - name: set env
-        run: ::set-env name=POI_HEALTH_CHECK_STATUS::$(curl https://openhackjra3xid0poi-staging.azurewebsites.net/api/healthcheck/poi) 
 
       
       - name: Swap slot when healthy
@@ -53,5 +50,16 @@ jobs:
           #Azure CLI script to swap web app slot
           azcliversion: latest
           inlineScript: |
-            az webapp deployment slot swap -n "openhackt9f3u9t8poi" -g "openhackt9f3u9t8rg" -s "staging" --target-slot "Production"
+            echo "##############################"
+            echo "Lets get POI web app health check status"
+            $POI_HEALTH_CHECK_STATUS = $(curl "https://openhackt9f3u9t8poi.azurewebsites.net/api/healthcheck/poi") 
+            echo The Web App for POI is "$POI_HEALTH_CHECK_STATUS"
+            if [ "$POI_HEALTH_CHECK_STATUS" == 'Healthy']; then
+                az webapp deployment slot swap -n "openhackt9f3u9t8poi" -g "openhackt9f3u9t8rg" -s "staging" --target-slot "Production"
+                echo "#############################"
+                echo "#Swap completed             # "   
+                echo "#############################"
+            else
+                echo #No Swap will be executed API is not healthy#
+            fi
             
