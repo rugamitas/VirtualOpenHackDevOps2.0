@@ -4,3 +4,4 @@ Test3 with CD
 Test4 deployment to ACR
 Test4.1 second time - deployment to ACR  
 Test5 add docker build and push task
+TEst6 go back to azure ACR task
