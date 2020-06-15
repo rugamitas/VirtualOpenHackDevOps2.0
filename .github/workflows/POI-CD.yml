@@ -49,9 +49,9 @@ jobs:
           inlineScript: |
             echo "##############################"
             echo "Lets get POI web app health check status"
-            $POI_HEALTH_CHECK_STATUS = $(curl https://openhackt9f3u9t8poi.azurewebsites.net/api/healthcheck/poi) 
+            $POI_HEALTH_CHECK_STATUS = curl https://openhackt9f3u9t8poi.azurewebsites.net/api/healthcheck/poi
             echo The Web App for POI is "$POI_HEALTH_CHECK_STATUS"
-            if [ "$POI_HEALTH_CHECK_STATUS" == 'Healthy']; then
+            if ["$(POI_HEALTH_CHECK_STATUS)" == 'Healthy'];then
                 az webapp deployment slot swap -n "openhackt9f3u9t8poi" -g "openhackt9f3u9t8rg" -s "staging" --target-slot "Production"
                 echo "#############################"
                 echo "#Swap completed             # "   
