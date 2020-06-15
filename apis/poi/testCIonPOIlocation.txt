@@ -14,3 +14,4 @@ Test10.1 forget to remove a line
 Test10.2 modify as command remove comillas
 Test10.3 adjust first as CLI command
 Test10.4 adjust second azure CLI command
+Test10.5 add = to second AZ CLI script
