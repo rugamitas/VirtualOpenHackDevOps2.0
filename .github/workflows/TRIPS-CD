@@ -33,7 +33,7 @@ name: TRIPS CD
         uses: Azure/docker-login@v1
         with:
           username: openhackt9f3u9t8acr
-          password: ${{ secrets.ACR_KEY }}
+          password: ${{ secrets.AZURE_ACR_KEY }}
           login-server: openhackt9f3u9t8acr.azurecr.io
 
         # Runs a single command using the runners shell
