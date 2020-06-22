@@ -125,8 +125,6 @@ name: TRIPS CD
             run: |
               az logout
 
-
-
         
 
     # - name: Get versions in prod / staging
