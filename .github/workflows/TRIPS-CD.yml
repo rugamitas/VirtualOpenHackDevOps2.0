@@ -24,178 +24,115 @@ name: TRIPS CD
         
         #Azure CLI login task
         - name: 'Login via Azure CLI'
-        uses: Azure/login@v1.1
-        with:
-          # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
-          creds: ${{ secrets.AZURE_CREDENTIALS }}        
+          uses: Azure/login@v1.1
+          with:
+            # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
+            creds: ${{ secrets.AZURE_CREDENTIALS }}        
 
         - name: Docker Login
-        uses: Azure/docker-login@v1
-        with:
-          username: openhackt9f3u9t8acr
-          password: ${{ secrets.AZURE_ACR_KEY }}
-          login-server: openhackt9f3u9t8acr.azurecr.io
+          uses: Azure/docker-login@v1
+          with:
+            username: openhackt9f3u9t8acr
+            password: ${{ secrets.AZURE_ACR_KEY }}
+            login-server: openhackt9f3u9t8acr.azurecr.io
 
         # Runs a single command using the runners shell
         - name: Build Docker Container
-        run: docker build apis/trips -t openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
+          run: docker build apis/trips -t openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
         
         # Runs a set of commands using the runners shell
         - name: Push to ACR
-        run: docker push openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
+          run: docker push openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
+        
+        - name: Deploy to Azure Web App staging slot
+          uses: Azure/webapps-deploy@v2
+          with:
+            app-name: openhackt9f3u9t8trips
+            slot-name: staging
+            images: openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
+          
+    #### the following code checks the health of staging slot before deploying the release to production slot ####
+    test:
+      needs: [deploy]
+      runs-on: windows-latest
+      steps:
+        - name: Test the Staging Slot
+          run: |
+            $R = Invoke-WebRequest -Method Get -URI 'https://openhackt9f3u9t8trips-staging.azurewebsites.net/api/healthcheck/trips'
+            $timestamp = Get-Date
+            $output = ""
+            $output = '{0} | {1} | {2}' -f($timestamp, $R.StatusCode, $Uri)
 
-  - name: Azure Login
+            if($R.StatusCode -ne '200'){
+              exit 1
+            } else {
+              $output = '{0} | {1}' -f($timestamp, $R.StatusCode)
+            }
 
-  uses: Azure/login@v1.1
+            Write-Output $output
+            Start-Sleep -Seconds 1
 
-  with:
+          shell: powershell
 
-  creds: ${{ secrets.AZURE_CREDENTIALS }}
+            ##### the following rollbacks the release in case the staging slot is unhealthy #####
 
-  - name: Deploy to Azure Web App staging slot
-
-  uses: Azure/webapps-deploy@v2
-
-  with:
-
-  app-name: openhackggp0ljh0trips
-
-  slot-name: staging
-
-  images: openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
-
-  #### the following code checks the health of staging slot before deploying the release to production slot ####
-
-  test:
-
-  needs: [deploy]
-
-  runs-on: windows-latest
-
-  steps:
-
-  - name: Test the Staging Slot
-
-  run: |
-
-  $R = Invoke-WebRequest -Method Get -URI 'https://openhackggp0ljh0trips-staging.azurewebsites.net/api/healthcheck/trips'
-
-  $timestamp = Get-Date
-
-  $output = ""
-
-  $output = '{0} | {1} | {2}' -f($timestamp, $R.StatusCode, $Uri)
-
-  if($R.StatusCode -ne '200'){
-
-  exit 1
-
-  } else {
-
-  $output = '{0} | {1}' -f($timestamp, $R.StatusCode)
-
-  }
-
-  Write-Output $output
-
-  Start-Sleep -Seconds 1
-
-  shell: powershell
-
-  ##### the following rollbacks the release in case the staging slot is unhealthy #####
-
-  - name: Rollback Release
-
-  if: failure()
-
-  uses: author/action-rollback@stable
-
-  with:
-
-  # Using a known release ID
-
-  id: ${{ steps.create_release.id }}
+        - name: Rollback Release
+          if: failure()
+          uses: author/action-rollback@stable
+          with:
+            # Using a known release ID
+            id: ${{ steps.create_release.id }}
 
   # Using a tag name
-
   tag: 'v1.0.1'
-
   # Always delete the tag, even if a release is not associated with it.
-
   always_delete_tag: true
-
   env:
-
   GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
 
   #----
 
-  swap:
+    swap:
+      needs : [test]
+      runs-on: ubuntu-latest
+      steps:
+        
 
-  needs : [test]
+    # - name: Get versions in prod / staging
+    # uses: Azure/CLI@v1
+    # with:
+    # inlineScript: |
+    # staging=`az webapp config container show -n openhackggp0ljh0trips --slot staging -g openhackggp0ljh0rg | grep openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips | awk '{print $2}'`
+    # prod=`az webapp config container show -n openhackggp0ljh0trips -g openhackggp0ljh0rg | grep openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips | awk '{print $2}'`
+    # echo ::set-env name=staging-version::$staging
+    # echo ::set-env name=prod-version::$prod
 
-  runs-on: ubuntu-latest
+        - name: Create a Github Issue
+          uses: actions/github-script@0.9.0
+          with:
+            script: |
+              github.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: ' Manually approve the TRIPS Deployment before pushing to production',
+            assignees: [ '${{ github.actor }}' ],
+            body: 'Please perform the following:<br><br>* navigate to [the API\'s swagger endpoint](https://openhackggp0ljh0trips-staging.azurewebsites.net/api/docs/trips/index.html)<br>* if everything looks good, comment `/approve` to deploy to production<br><br>Current version in prod: ${{ env.prod-version }}<br><br>Version in staging: ${{ env.staging-version }}'
+            }) 
 
-  steps:
+        # TODO Check for approve action for above step before running the below swap action: 
 
-  # - name: Get versions in prod / staging
+        - name: 'Login via Azure CLI'
+          uses: Azure/login@v1.1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-  # uses: Azure/CLI@v1
+        - name: Run CLI script
+          uses: Azure/CLI@v1
+          with:
+            inlineScript: |
+              az webapp deployment slot swap -g openhackggp0ljh0rg -n openhackggp0ljh0trips --slot staging --target-slot production
 
-  # with:
-
-  # inlineScript: |
-
-  # staging=`az webapp config container show -n openhackggp0ljh0trips --slot staging -g openhackggp0ljh0rg | grep openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips | awk '{print $2}'`
-
-  # prod=`az webapp config container show -n openhackggp0ljh0trips -g openhackggp0ljh0rg | grep openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips | awk '{print $2}'`
-
-  # echo ::set-env name=staging-version::$staging
-
-  # echo ::set-env name=prod-version::$prod
-
-  - name: Create a Github Issue
-
-  uses: actions/github-script@0.9.0
-
-  with:
-
-  script: |
-
-  github.issues.create({
-
-  owner: context.repo.owner,
-
-  repo: context.repo.repo,
-
-  title: ' Manually approve the TRIPS Deployment before pushing to production',
-
-  assignees: [ '${{ github.actor }}' ],
-
-  body: 'Please perform the following:<br><br>* navigate to [the API\'s swagger endpoint](https://openhackggp0ljh0trips-staging.azurewebsites.net/api/docs/trips/index.html)<br>* if everything looks good, comment `/approve` to deploy to production<br><br>Current version in prod: ${{ env.prod-version }}<br><br>Version in staging: ${{ env.staging-version }}'
-
-  }) 
-
-  # TODO Check for approve action for above step before running the below swap action: 
-
-  - name: 'Login via Azure CLI'
-
-  uses: Azure/login@v1.1
-
-  with:
-
-  creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-  - name: Run CLI script
-
-  uses: Azure/CLI@v1
-
-  with:
-
-  inlineScript: |
-
-  az webapp deployment slot swap -g openhackggp0ljh0rg -n openhackggp0ljh0trips --slot staging --target-slot production
-
-  - name: Azure Logout
-
-  run: az logout
+          #always execute the logout
+          - name: Azure logout
+            run: |
+              az logout
