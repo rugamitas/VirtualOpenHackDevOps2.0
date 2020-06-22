@@ -32,24 +32,24 @@ name: TRIPS CD
         - name: Docker Login
           uses: Azure/docker-login@v1
           with:
-            username: openhackt9f3u9t8acr
+            username: ${{ secrets.REGISTRY_USERNAME }} 
             password: ${{ secrets.AZURE_ACR_KEY }}
-            login-server: openhackt9f3u9t8acr.azurecr.io
+            login-server: ${{ secrets.AZURE_ACR }}
 
         # Runs a single command using the runners shell
         - name: Build Docker Container
-          run: docker build apis/trips -t openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
+          run: docker build apis/trips -t ${{ secrets.AZURE_ACR }}/${{ secrets.TRIPS_CONTAINER_REPO }}:${{ github.run_number }}
         
         # Runs a set of commands using the runners shell
         - name: Push to ACR
-          run: docker push openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
+          run: docker push ${{ secrets.AZURE_ACR }}/${{ secrets.TRIPS_CONTAINER_REPO }}:${{ github.run_number }}
         
         - name: Deploy to Azure Web App staging slot
           uses: Azure/webapps-deploy@v2
           with:
             app-name: openhackt9f3u9t8trips
             slot-name: staging
-            images: openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
+            images: "${{ secrets.AZURE_ACR }}/${{ secrets.TRIPS_CONTAINER_REPO }}:${{ github.run_number }}"
           
     #### the following code checks the health of staging slot before deploying the release to production slot ####
     test:
@@ -90,23 +90,11 @@ name: TRIPS CD
   env:
   GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
 
-  #----
-
+    #Lets execute the swap 
     swap:
       needs : [test]
       runs-on: ubuntu-latest
       steps:
-        
-
-    # - name: Get versions in prod / staging
-    # uses: Azure/CLI@v1
-    # with:
-    # inlineScript: |
-    # staging=`az webapp config container show -n openhackggp0ljh0trips --slot staging -g openhackggp0ljh0rg | grep openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips | awk '{print $2}'`
-    # prod=`az webapp config container show -n openhackggp0ljh0trips -g openhackggp0ljh0rg | grep openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips | awk '{print $2}'`
-    # echo ::set-env name=staging-version::$staging
-    # echo ::set-env name=prod-version::$prod
-
         - name: Create a Github Issue
           uses: actions/github-script@0.9.0
           with:
@@ -116,7 +104,7 @@ name: TRIPS CD
             repo: context.repo.repo,
             title: ' Manually approve the TRIPS Deployment before pushing to production',
             assignees: [ '${{ github.actor }}' ],
-            body: 'Please perform the following:<br><br>* navigate to [the API\'s swagger endpoint](https://openhackggp0ljh0trips-staging.azurewebsites.net/api/docs/trips/index.html)<br>* if everything looks good, comment `/approve` to deploy to production<br><br>Current version in prod: ${{ env.prod-version }}<br><br>Version in staging: ${{ env.staging-version }}'
+            body: 'Please perform the following:<br><br>* navigate to [the API\'s swagger endpoint](https://openhackt9f3u9t8trips-staging.azurewebsites.net/api/docs/trips/index.html)<br>* if everything looks good, comment `/approve` to deploy to production<br><br>Current version in prod: ${{ env.prod-version }}<br><br>Version in staging: ${{ env.staging-version }}'
             }) 
 
         # TODO Check for approve action for above step before running the below swap action: 
@@ -130,9 +118,22 @@ name: TRIPS CD
           uses: Azure/CLI@v1
           with:
             inlineScript: |
-              az webapp deployment slot swap -g openhackggp0ljh0rg -n openhackggp0ljh0trips --slot staging --target-slot production
+              az webapp deployment slot swap -g openhackt9f3u9t8rg -n openhackt9f3u9t8trips --slot staging --target-slot production
 
           #always execute the logout
           - name: Azure logout
             run: |
               az logout
+
+
+
+        
+
+    # - name: Get versions in prod / staging
+    # uses: Azure/CLI@v1
+    # with:
+    # inlineScript: |
+    # staging=`az webapp config container show -n openhackggp0ljh0trips --slot staging -g openhackggp0ljh0rg | grep openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips | awk '{print $2}'`
+    # prod=`az webapp config container show -n openhackggp0ljh0trips -g openhackggp0ljh0rg | grep openhackt9f3u9t8acr.azurecr.io/devopsoh/api-trips | awk '{print $2}'`
+    # echo ::set-env name=staging-version::$staging
+    # echo ::set-env name=prod-version::$prod
