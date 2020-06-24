@@ -38,7 +38,7 @@ name: TRIPS CD
 
         # Runs a single command using the runners shell
         - name: Build Docker Container
-          run: docker build apis/trips -t ${{ secrets.AZURE_ACR }}/${{ secrets.TRIPS_CONTAINER_REPO }}:${{ github.run_number }}
+          run: docker build apis/trips -t ${{ secrets.AZURE_ACR }}/${{ secrets.TRIPS_CONTAINER_REPO }}:${{ github.run_number }} --build-arg build_version=${{github.run_number}}
         
         # Runs a set of commands using the runners shell
         - name: Push to ACR
@@ -114,7 +114,7 @@ name: TRIPS CD
           with:
             creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-        - name: Run CLI script
+        - name: Swap Prod to Staging
           uses: Azure/CLI@v1
           with:
             inlineScript: |
