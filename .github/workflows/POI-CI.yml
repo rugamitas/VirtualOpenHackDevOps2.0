@@ -30,12 +30,18 @@ jobs:
     - name: Setup .NET Core SDK
       uses: actions/setup-dotnet@v1.5.0
       with:
-        dotnet-version: 3.1
+        dotnet-version: '3.1.202'
         
-    - name: build
-      run: dotnet build apis/poi/poi.sln
+    - name: Install dependencies
+      run: dotnet restore apis/poi/web/*csproj
+      
+    - name: .NET Build
+      run: dotnet build apis/poi/web/*csproj
         
-    - name: dotnet unit testing
+    - name: .NET Build unit testing
+      run: dotnet build apis/poi/tests/UnitTests//UnitTests.csproj   
+    
+    - name: .NET unit testing
       run: dotnet test apis/poi/tests/UnitTests//UnitTests.csproj   
         
     # Runs a single command using the runners shell

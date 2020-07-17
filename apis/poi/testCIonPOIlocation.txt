@@ -6,3 +6,16 @@ Test4.1 second time - deployment to ACR
 Test5 add docker build and push task
 TEst6 go back to azure ACR task
 Test6.1 remove . at the end of the dockerfile
+Test7 add deploy to web app slot
+Test8 add web app health check and swap
+Test9 chhange the way to get the healthy status of the web app
+Test10 add the swap into a azure cli task
+Test10.1 forget to remove a line 
+Test10.2 modify as command remove comillas
+Test10.3 adjust first as CLI command
+Test10.4 adjust second azure CLI command
+Test10.5 add = to second AZ CLI script
+Test10.6 adjusting azure cli powershell
+Test10.7 adjusting azure cli powershell
+Test10.8 adjust azure cli
+Test10.9 adjust Azure CLI
