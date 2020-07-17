@@ -39,10 +39,10 @@ jobs:
       run: dotnet build apis/poi/web/*csproj
         
     - name: .NET Build unit testing
-      run: dotnet build apis/poi/tests/UnitTests//UnitTests.csproj   
+      run: dotnet build apis/poi/tests/UnitTests/UnitTests.csproj   
     
     - name: .NET unit testing
-      run: dotnet test apis/poi/tests/UnitTests//UnitTests.csproj   
+      run: dotnet test apis/poi/tests/UnitTests
         
     # Runs a single command using the runners shell
    # - name: Run a one-line script
